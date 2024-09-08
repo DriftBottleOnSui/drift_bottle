@@ -4,6 +4,8 @@ module drift_bottle::drift_bottle {
     use std::string::{String, utf8};
     use sui::event;
 
+    const EInvalidBlob: u64 = 0;
+ 
     public struct DriftBottle has key, store {
         id: UID,
         from: address,
@@ -11,7 +13,12 @@ module drift_bottle::drift_bottle {
         open: bool,
         to: Option<address>,
         reply_time: u64,
-        msgs: vector<address>,
+        msgs: vector<BottleMsg>,
+    }
+
+    public struct BottleMsg has store, copy, drop {
+        blob_id: String,
+        blob_obj: address,
     }
 
     public struct BottleEvent has copy, drop {
@@ -21,10 +28,18 @@ module drift_bottle::drift_bottle {
         action_type: String,
     }
 
-    public entry fun createBottle(msg_id: address, clock: &Clock, ctx: &mut TxContext) {
-        let bottle_id = object::new(ctx);
-        let msg_vec = vector::singleton(msg_id);
+    public entry fun createBottle(blob_id: String, blob_obj: address, clock: &Clock, ctx: &mut TxContext) {
+        assert!(!blob_id.is_empty(), EInvalidBlob);
 
+        let bottle_id = object::new(ctx);
+
+        let bottle_msg = BottleMsg {
+            blob_id,  // blob id on walrus
+            blob_obj, // object id on sui chain
+        };
+        let msg_vec = vector::singleton<BottleMsg>(bottle_msg);
+
+        // bottle info
         let bottle = DriftBottle {
             id: bottle_id,
             from: ctx.sender(),
@@ -45,10 +60,17 @@ module drift_bottle::drift_bottle {
         transfer::share_object(bottle);
     }
 
-    public entry fun openAndReplyBottle(bottle: &mut DriftBottle, reply_msg_id: address, clock: &Clock, ctx: &mut TxContext) {
-        let mut msgs = bottle.msgs;
-        msgs.push_back(reply_msg_id);
+    public entry fun openAndReplyBottle(bottle: &mut DriftBottle, blob_id: String, blob_obj: address, clock: &Clock, ctx: &mut TxContext) {
+        assert!(!blob_id.is_empty(), EInvalidBlob);
 
+        let mut msgs = bottle.msgs;
+        let reply_msg = BottleMsg {
+            blob_id,  // blob id on walrus
+            blob_obj, // object id on sui chain
+        };
+        msgs.push_back(reply_msg);
+
+        // reply info
         bottle.open = true;
         bottle.to = option::some(ctx.sender());
         bottle.reply_time = clock.timestamp_ms()/1000;
