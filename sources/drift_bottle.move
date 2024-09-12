@@ -1,11 +1,11 @@
-module drift_bottle::drift_bottle {
+module drift_bottle::social_bottle {
 
     use sui::clock::Clock;
     use std::string::{String, utf8};
     use sui::event;
 
     const EInvalidBlob: u64 = 0;
- 
+    
     public struct DriftBottle has key, store {
         id: UID,
         from: address,
@@ -13,10 +13,11 @@ module drift_bottle::drift_bottle {
         open: bool,
         to: Option<address>,
         reply_time: u64,
-        msgs: vector<BottleMsg>,
+        msgs: vector<BlobInfo>,
     }
 
-    public struct BottleMsg has store, copy, drop {
+
+    public struct BlobInfo has store, copy, drop {
         blob_id: String,
         blob_obj: address,
     }
@@ -28,16 +29,17 @@ module drift_bottle::drift_bottle {
         action_type: String,
     }
 
+    // todo syj arry
     public entry fun createBottle(blob_id: String, blob_obj: address, clock: &Clock, ctx: &mut TxContext) {
         assert!(!blob_id.is_empty(), EInvalidBlob);
 
         let bottle_id = object::new(ctx);
 
-        let bottle_msg = BottleMsg {
+        let bottle_msg = BlobInfo {
             blob_id,  // blob id on walrus
             blob_obj, // object id on sui chain
         };
-        let msg_vec = vector::singleton<BottleMsg>(bottle_msg);
+        let msg_vec = vector::singleton<BlobInfo>(bottle_msg);
 
         // bottle info
         let bottle = DriftBottle {
@@ -60,11 +62,18 @@ module drift_bottle::drift_bottle {
         transfer::share_object(bottle);
     }
 
-    public entry fun openAndReplyBottle(bottle: &mut DriftBottle, blob_id: String, blob_obj: address, clock: &Clock, ctx: &mut TxContext) {
+    public entry fun openAndReplyBottle(
+        bottle: &mut DriftBottle, 
+        blob_id: String, 
+        blob_obj: address, 
+        clock: &Clock, 
+        ctx: &mut TxContext) 
+    {
         assert!(!blob_id.is_empty(), EInvalidBlob);
 
+        // todo syj check msgs.size = 1 && open == false
         let mut msgs = bottle.msgs;
-        let reply_msg = BottleMsg {
+        let reply_msg = BlobInfo {
             blob_id,  // blob id on walrus
             blob_obj, // object id on sui chain
         };
@@ -81,6 +90,14 @@ module drift_bottle::drift_bottle {
             bottle_id: bottle.id.to_inner(),
             action_type: utf8(b"reply"),
         });
+    }
+
+    // helper function
+    public fun createBlobInfo(blob_id: String, blob_obj: address): BlobInfo {
+        BlobInfo {
+            blob_id,
+            blob_obj,
+        }
     }
 
 }
