@@ -35,8 +35,8 @@ module drift_bottle::drift_bottle_tests {
 
             let mut alice_bottle = scenario.take_shared<DriftBottle>();
             db::openAndReplyBottle(&mut alice_bottle, 
-                utf8(b"9b7CO3EVPl9r3HXNC7zbnKOgo8Yprs7U4_jOVLX_huE"), 
-                ReplyObj,
+                vector::singleton(utf8(b"9b7CO3EVPl9r3HXNC7zbnKOgo8Yprs7U4_jOVLX_huE")), 
+                vector::singleton(ReplyObj),
                 &my_clock, 
                 scenario.ctx());
 

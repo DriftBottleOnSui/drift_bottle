@@ -8,11 +8,12 @@
 
 # Development
 ```
-package: 0x419f741236dfd9cb6fa2199402f3fe0381975eb8e56e970f2adb459f7e625104
-UserStatus: 0xe1e8c48426760ae705ed69e80891a4deb5ac4931e9afd2d379a5700427970d43
+package: 0x8d8d036f8bb13cca17e1e2593b3dc74fe1011325a91dc45f158c1820e8c21d1f
+UserStatus: 0xfc404b0b8dce9579a1cbee029afc35afe19c9e3f26a7958bb9b2c8b6410f3817
 
 
 sui client call --function publishStatus --package 0x419f741236dfd9cb6fa2199402f3fe0381975eb8e56e970f2adb459f7e625104 --module user_status --args 0xe1e8c48426760ae705ed69e80891a4deb5ac4931e9afd2d379a5700427970d43 '[5z_AD0YwCFUfoko2NfqiDjqavuEpQ2yrtKmGggG-cRM, 9b7CO3EVPl9r3HXNC7zbnKOgo8Yprs7U4_jOVLX_huE]' '[0x38d0f836fae936fd28272cae04e7f9e18fbeef18714d4bf1c41703ac8ca397fd,0x965f3cd3233616565ad858b4d102c80546774552111a5f3d2b67d61b20cf0223]'
 
+sui client call --function createBottle --package 0x8d8d036f8bb13cca17e1e2593b3dc74fe1011325a91dc45f158c1820e8c21d1f --module social_bottle --args '[5z_AD0YwCFUfoko2NfqiDjqavuEpQ2yrtKmGggG, 9b7CO3EVPl9r3HXNC7zbnKOgo8Yprs7U4_jOVLX_huE]' '[0x38d0f836fae936fd28272cae04e7f9e18fbeef18714d4bf1c41703ac8ca397fd, 0x965f3cd3233616565ad858b4d102c80546774552111a5f3d2b67d61b20cf0223]' 0x6
 
 ```

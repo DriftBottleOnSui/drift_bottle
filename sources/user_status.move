@@ -41,7 +41,7 @@ module drift_bottle::user_status {
         };
 
         // append new status
-        let new_status = getBlobInfoFromParam(blob_ids, blob_objs);
+        let new_status = social_bottle::createBlobInfos(blob_ids, blob_objs);
         vector::append(&mut before_status, new_status);
 
         event::emit(PublishStatusEvent {
@@ -52,18 +52,6 @@ module drift_bottle::user_status {
         // save all status
         vec_map::insert(&mut user_status.allStatus, ctx.sender(), before_status);
 
-    }
-
-    public(package) fun getBlobInfoFromParam(blob_ids: vector<String>, blob_objs: vector<address>): vector<BlobInfo> {
-        let mut blob_infos = vector::empty<BlobInfo>();
-        let len = blob_ids.length();
-        let mut i = 0;
-        while( i < len) {
-            let blob_info = social_bottle::createBlobInfo(blob_ids[i], blob_objs[i]);
-            blob_infos.insert(blob_info, i);
-            i = i + 1;
-        };
-        blob_infos
     }
 
     #[test_only]

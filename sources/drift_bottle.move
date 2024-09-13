@@ -6,6 +6,8 @@ module drift_bottle::social_bottle {
 
     const EInvalidBlob: u64 = 0;
     const EInvalidLen: u64 = 1;
+    const EEmptyBottle: u64 = 2;
+    const EAlreadyOpened: u64 = 3;
 
     public struct DriftBottle has key, store {
         id: UID,
@@ -17,10 +19,9 @@ module drift_bottle::social_bottle {
         msgs: vector<BlobInfo>,
     }
 
-
     public struct BlobInfo has store, copy, drop {
-        blob_id: String,
-        blob_obj: address,
+        blob_id: String,   // blob id on walrus
+        blob_obj: address, // object id on sui chain
     }
 
     public struct BottleEvent has copy, drop {
@@ -38,15 +39,7 @@ module drift_bottle::social_bottle {
         let bottle_id = object::new(ctx);
 
         // generate bottle msgs by blob_id and blob_obj
-        let mut bottle_msg = vector::empty<BlobInfo>();
-        let len = blob_ids.length();
-        let mut i = 0;
-        while( i < len) {
-            let blob_info = createBlobInfo(blob_ids[i], blob_objs[i]);
-            bottle_msg.insert(blob_info, i);
-            i = i + 1;
-        };
-        
+        let bottle_msg = createBlobInfos(blob_ids, blob_objs);
 
         // create drift bottle object
         let bottle = DriftBottle {
@@ -71,20 +64,21 @@ module drift_bottle::social_bottle {
 
     public entry fun openAndReplyBottle(
         bottle: &mut DriftBottle, 
-        blob_id: String, 
-        blob_obj: address, 
+        blob_ids: vector<String>, 
+        blob_objs: vector<address>,
         clock: &Clock, 
         ctx: &mut TxContext) 
     {
-        assert!(!blob_id.is_empty(), EInvalidBlob);
+        assert!(!blob_ids.is_empty(), EInvalidBlob);
+        assert!(blob_ids.length() == blob_objs.length(), EInvalidLen);
 
-        // todo syj check msgs.size = 1 && open == false
-        let mut msgs = bottle.msgs;
-        let reply_msg = BlobInfo {
-            blob_id,  // blob id on walrus
-            blob_obj, // object id on sui chain
-        };
-        msgs.push_back(reply_msg);
+        // check msgs.size = 1 && open == false, ensure it's not a empty bottle, and the bottle is not opened 
+        let mut before_msgs = bottle.msgs;
+        assert!(before_msgs.length() >= 1, EEmptyBottle);
+        assert!(!bottle.open, EAlreadyOpened);
+
+        let reply_msg = createBlobInfos(blob_ids, blob_objs);
+        before_msgs.append(reply_msg);
 
         // reply info
         bottle.open = true;
@@ -100,11 +94,18 @@ module drift_bottle::social_bottle {
     }
 
     // helper function
-    public fun createBlobInfo(blob_id: String, blob_obj: address): BlobInfo {
-        BlobInfo {
-            blob_id,
-            blob_obj,
-        }
+    public fun createBlobInfos(blob_ids: vector<String>, blob_objs: vector<address>): vector<BlobInfo> {
+        let mut bottle_msg = vector::empty<BlobInfo>();
+        let len = blob_ids.length();
+        let mut i = 0;
+        while( i < len) {
+            bottle_msg.insert(
+                BlobInfo {
+                    blob_id: blob_ids[i],
+                    blob_obj:blob_objs[i],
+                   }, i);
+            i = i + 1;
+        };
+        bottle_msg
     }
-
 }
