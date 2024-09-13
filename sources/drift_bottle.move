@@ -72,13 +72,14 @@ module drift_bottle::social_bottle {
         assert!(!blob_ids.is_empty(), EInvalidBlob);
         assert!(blob_ids.length() == blob_objs.length(), EInvalidLen);
 
-        // check msgs.size = 1 && open == false, ensure it's not a empty bottle, and the bottle is not opened 
+        // check msgs.size >= 1 && open == false, ensure it's not a empty bottle, and the bottle is not opened 
         let mut before_msgs = bottle.msgs;
         assert!(before_msgs.length() >= 1, EEmptyBottle);
         assert!(!bottle.open, EAlreadyOpened);
 
         let reply_msg = createBlobInfos(blob_ids, blob_objs);
         before_msgs.append(reply_msg);
+        bottle.msgs = before_msgs;
 
         // reply info
         bottle.open = true;
