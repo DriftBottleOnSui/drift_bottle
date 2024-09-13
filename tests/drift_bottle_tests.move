@@ -1,7 +1,7 @@
 #[test_only]
 module drift_bottle::drift_bottle_tests {
 
-    use drift_bottle::drift_bottle::{Self as db, DriftBottle};
+    use drift_bottle::social_bottle::{Self as db, DriftBottle};
     use std::string::{utf8};
     use sui::test_scenario;
     use sui::clock;
@@ -20,8 +20,8 @@ module drift_bottle::drift_bottle_tests {
             let mut my_clock = clock::create_for_testing(scenario.ctx());
             my_clock.set_for_testing(1000 * 10);
 
-            db::createBottle(utf8(b"5z_AD0YwCFUfoko2NfqiDjqavuEpQ2yrtKmGggG-cRM"), 
-                BlobObj, 
+            db::createBottle(vector::singleton(utf8(b"5z_AD0YwCFUfoko2NfqiDjqavuEpQ2yrtKmGggG-cRM")), 
+                vector::singleton(BlobObj), 
                 &my_clock, 
                 scenario.ctx());
             my_clock.destroy_for_testing();

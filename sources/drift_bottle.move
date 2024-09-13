@@ -5,7 +5,8 @@ module drift_bottle::social_bottle {
     use sui::event;
 
     const EInvalidBlob: u64 = 0;
-    
+    const EInvalidLen: u64 = 1;
+
     public struct DriftBottle has key, store {
         id: UID,
         from: address,
@@ -29,19 +30,25 @@ module drift_bottle::social_bottle {
         action_type: String,
     }
 
-    // todo syj arry
-    public entry fun createBottle(blob_id: String, blob_obj: address, clock: &Clock, ctx: &mut TxContext) {
-        assert!(!blob_id.is_empty(), EInvalidBlob);
+    // create drift bottle with a few of msgs, such as words、picture、video and so on
+    public entry fun createBottle(blob_ids: vector<String>, blob_objs: vector<address>, clock: &Clock, ctx: &mut TxContext) {
+        assert!(!blob_ids.is_empty(), EInvalidBlob);
+        assert!(blob_ids.length() == blob_objs.length(), EInvalidLen);
 
         let bottle_id = object::new(ctx);
 
-        let bottle_msg = BlobInfo {
-            blob_id,  // blob id on walrus
-            blob_obj, // object id on sui chain
+        // generate bottle msgs by blob_id and blob_obj
+        let mut bottle_msg = vector::empty<BlobInfo>();
+        let len = blob_ids.length();
+        let mut i = 0;
+        while( i < len) {
+            let blob_info = createBlobInfo(blob_ids[i], blob_objs[i]);
+            bottle_msg.insert(blob_info, i);
+            i = i + 1;
         };
-        let msg_vec = vector::singleton<BlobInfo>(bottle_msg);
+        
 
-        // bottle info
+        // create drift bottle object
         let bottle = DriftBottle {
             id: bottle_id,
             from: ctx.sender(),
@@ -49,7 +56,7 @@ module drift_bottle::social_bottle {
             open: false,
             to: option::none(),
             reply_time: 0,
-            msgs: msg_vec,
+            msgs: bottle_msg,
         };
 
         event::emit(BottleEvent {
