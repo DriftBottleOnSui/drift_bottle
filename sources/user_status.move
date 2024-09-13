@@ -7,6 +7,9 @@ module drift_bottle::user_status {
 
     const EInvalidBlob: u64 = 0;
     const EInvalidLen: u64 = 1;
+    const EAddSelfAsFriend: u64 = 2;
+    const EAlreadyFriends: u64 = 3;
+    const ENotFriends:u64 = 4;
 
     public struct UserStatus has key {
         id: UID,
@@ -19,7 +22,12 @@ module drift_bottle::user_status {
         current_user_status: vector<BlobInfo>,
     }
 
-    // init a empty object of AllStatus
+    public struct BecomeFriendsEvent has copy, drop {
+        me: address,
+        new_friend: address,
+    }
+
+    // init a empty object of UserStatus
     fun init(ctx: &mut TxContext) {
         let all_status = UserStatus {
             id: object::new(ctx),
@@ -29,6 +37,7 @@ module drift_bottle::user_status {
         transfer::share_object(all_status);
     }
 
+    // user publish status
     public fun publishStatus(user_status: &mut UserStatus, blob_ids: vector<String>, blob_objs: vector<address>, ctx: &mut TxContext) {
         assert!(!blob_ids.is_empty(), EInvalidBlob);
         assert!(blob_ids.length() == blob_objs.length(), EInvalidLen);
@@ -51,7 +60,35 @@ module drift_bottle::user_status {
         
         // save all status
         vec_map::insert(&mut user_status.allStatus, ctx.sender(), before_status);
+    }
 
+    // sender and new_friend become friends
+    public entry fun becomeFriends(new_friend: address, user_status: &mut UserStatus, ctx: &mut TxContext) {
+        assert!(new_friend != ctx.sender(), EAddSelfAsFriend);
+
+        let have_friends = user_status.relations.contains(&ctx.sender());
+        let mut my_friends = vector::empty<address>();
+        if(have_friends) {
+            (_, my_friends) = user_status.relations.remove(&ctx.sender());
+            assert!(!my_friends.contains(&new_friend), EAlreadyFriends); // already friends
+        };
+        my_friends.push_back(new_friend);
+
+        user_status.relations.insert(ctx.sender(), my_friends);
+
+        event::emit(BecomeFriendsEvent {
+            me: ctx.sender(),
+            new_friend: new_friend,
+        });
+    }
+
+    public fun queryFriendStatus(friend_addr: &address, user_status: &UserStatus, ctx: &TxContext) : &vector<BlobInfo> {
+        let my_friends = user_status.relations.get(&ctx.sender());
+        let is_friend = !my_friends.is_empty() && my_friends.contains(friend_addr);
+        assert!(is_friend, ENotFriends);
+
+        let friend_status = user_status.allStatus.get(friend_addr);
+        friend_status
     }
 
     #[test_only]

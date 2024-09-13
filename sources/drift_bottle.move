@@ -93,7 +93,7 @@ module drift_bottle::social_bottle {
             action_type: utf8(b"reply"),
         });
     }
-
+    
     // helper function
     public fun createBlobInfos(blob_ids: vector<String>, blob_objs: vector<address>): vector<BlobInfo> {
         let mut bottle_msg = vector::empty<BlobInfo>();

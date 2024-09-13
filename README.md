@@ -18,5 +18,7 @@ sui client call --function createBottle --package 0x8d8d036f8bb13cca17e1e2593b3d
 
 sui client call --function openAndReplyBottle --package 0x85ed52bac0bc20a1f499a85935d844f089a8bb31bb47540c7375d7bd983b0493 --module social_bottle --args 0xf55004b13c8bc4d6f7ca2a5edbd8985124e7979b9fd8a3e49e90b253e3263e6c '[JVmbZRCGzXccKcFnA_cz-xZUi8QasEy_yMoojWPm3R4, JVmbZRCGzXccKcFnA_cz-xZUi8QasEy_yMoojWPm3R4]' '[0x9c6c6cd2a403353077a0d3236cdb173c9d60c61b6aec3500508a2a33c4aa210a,0x9c6c6cd2a403353077a0d3236cdb173c9d60c61b6aec3500508a2a33c4aa210a]' 0x6
 
-
+-- v2
+package: 0xd0bb9f2fb93d5d750a859758b8c75fcb3416bfc71dc8684912de35cd030912b7
+UserStatus: 0xb39de8483e83b19adbfe3a838f6c583c9db61ec15ca24434a547c27f85b383a9
 ```
