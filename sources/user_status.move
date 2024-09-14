@@ -9,7 +9,7 @@ module drift_bottle::user_status {
     const EInvalidLen: u64 = 1;
     const EAddSelfAsFriend: u64 = 2;
     const EAlreadyFriends: u64 = 3;
-    const ENotFriends:u64 = 4;
+    // const ENotFriends:u64 = 4;
 
     public struct UserStatus has key {
         id: UID,
@@ -82,13 +82,18 @@ module drift_bottle::user_status {
         });
     }
 
-    public fun queryFriendStatus(friend_addr: &address, user_status: &UserStatus, ctx: &TxContext) : &vector<BlobInfo> {
-        let my_friends = user_status.relations.get(&ctx.sender());
-        let is_friend = !my_friends.is_empty() && my_friends.contains(friend_addr);
-        assert!(is_friend, ENotFriends);
+    // query my friends' published status, return a null vector for a more friendly display
+    public fun queryFriendStatus(friend_addr: address, user_status: &UserStatus, ctx: &TxContext) : vector<BlobInfo> {
+        let my_friends = user_status.relations.try_get<address, vector<address>>(&ctx.sender());
+        
+        let is_friend = my_friends.is_some() && my_friends.borrow().contains(&friend_addr);
+        // assert!(is_friend, ENotFriends);
+        if(!is_friend) {
+            return vector::empty<BlobInfo>()
+        };
 
-        let friend_status = user_status.allStatus.get(friend_addr);
-        friend_status
+        let friend_status = user_status.allStatus.get(&friend_addr);
+        *friend_status
     }
 
     #[test_only]
@@ -97,6 +102,7 @@ module drift_bottle::user_status {
     #[test]
     fun test_publish_user_status() {
         use std::string::{utf8};
+        use std::debug;
 
         let alice = @0x1;
         let bob = @0x2;
@@ -122,6 +128,28 @@ module drift_bottle::user_status {
             test_scenario::return_shared(user_status);
         };
         scenario.next_tx(alice);
+
+        {
+            let mut user_status = scenario.take_shared<UserStatus>();
+            becomeFriends(bob, &mut user_status, scenario.ctx());
+            test_scenario::return_shared(user_status);
+        };
+
+        scenario.next_tx(alice);
+        {
+            let user_status = scenario.take_shared<UserStatus>();
+            let bob_status = queryFriendStatus(bob, &user_status, scenario.ctx());
+            debug::print(&bob_status);
+            test_scenario::return_shared(user_status);
+        };
+
+        scenario.next_tx(bob);
+        {
+            let user_status = scenario.take_shared<UserStatus>();
+            let alice_status = queryFriendStatus(alice, &user_status, scenario.ctx());
+            debug::print(&alice_status);
+            test_scenario::return_shared(user_status);
+        };
 
         scenario.end();
     }
