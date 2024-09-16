@@ -59,6 +59,5 @@ git clone https://github.com/DriftBottleOnSui/drift_bottle.git
 ```
 
 ### Deployment Address
-packageId: 0xd0bb9f2fb93d5d750a859758b8c75fcb3416bfc71dc8684912de35cd030912b7
-
-env: testnet
+packageId: 0xd0bb9f2fb93d5d750a859758b8c75fcb3416bfc71dc8684912de35cd030912b7 (testnet)
+packageId: 0x791441ea7d717ed19d75b8edfc0f13256108cae4016c21e6dbf23e5d728a99dc (mainnet)
